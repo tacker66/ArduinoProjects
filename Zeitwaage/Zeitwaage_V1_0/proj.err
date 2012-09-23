@@ -1,0 +1,24 @@
+
+avrdude: AVR device initialized and ready to accept instructions
+
+Reading | ################################################## | 100% 0.00s
+
+avrdude: Device signature = 0x1e9502
+
+
+
+avrdude: NOTE: FLASH memory has been specified, an erase cycle will be performed
+         To disable this feature, specify the -D option.
+avrdude: erasing chip
+avrdude: reading input file "main.hex"
+avrdude: input file main.hex auto detected as Intel Hex
+avrdude: writing flash (6018 bytes):
+
+Writing | ################################################## | 100% 1.93s
+
+avrdude: 6018 bytes of flash written
+
+avrdude: safemode: Fuses OK
+
+avrdude done.  Thank you.
+

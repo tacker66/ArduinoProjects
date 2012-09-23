@@ -1,0 +1,8 @@
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// + Zeitwaage zum Regulieren und Ausmessen mechanischer Uhren
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// + (c) 3.2006 Holger Buss
+// + Nur für den privaten Gebrauch
+// + Kommerzielle Nutzung nur mit meiner Einwilligung
+// + www.mikrocontroller.com
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
