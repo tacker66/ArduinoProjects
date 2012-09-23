@@ -2,7 +2,7 @@
 //
 // th.acker@arcor.de
 //
-// 01.01.2011
+// 02.01.2011
 //
 
 byte pin_g = 5;
@@ -18,8 +18,10 @@ int cycle = 1000;
 volatile unsigned long lastTicks = 0;
 volatile unsigned long lastCountedTicks = 0;
 
-// correction for onboard timer 
-volatile double correctionFactor = 1.0;
+// correction for onboard timer
+// correctionFactor * onboard time = real time 
+// hh:mm:ss 13:17:00 vs. 13:17:30 (i.e. 47820s / 47820s)
+volatile double correctionFactor = 0.99937304;
 
 // count number of measurements in intervals of 50ms=50000us
 // to get a good mute value (in us) for filtering
