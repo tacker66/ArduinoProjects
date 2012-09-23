@@ -2,45 +2,174 @@
 //
 // th.acker@arcor.de
 //
-// 30.12.2010
+// 01.01.2011
 //
 
 byte pin_g = 5;
 byte pin_y = 6;
 byte pin_r = 7;
-byte btn_i = 13;
 byte btn = 12;
-byte btn_state = HIGH;
-byte btn_last = HIGH;
+byte btn_i = 13;
 byte state = HIGH;
+
+// cycle time for main loop()
 int cycle = 1000;
 
 volatile unsigned long lastTicks = 0;
-volatile unsigned long sumTicks = 0;
-volatile unsigned long numTicks = 0;
+volatile unsigned long lastCountedTicks = 0;
+
+// correction for onboard timer 
+volatile double correctionFactor = 1.0;
+
+// count number of measurements in intervals of 50ms=50000us
+// to get a good mute value (in us) for filtering
+volatile unsigned int filterValue = 50000;
+volatile unsigned long statInterval = 50000;
+volatile unsigned int numStatistics = 25; 
+volatile unsigned int statistics[25];
+
+// number of values to count before computing a time span
+volatile unsigned int numValues = 5;
+volatile unsigned int actValue = 0;
+
+// moving average for measured values
+volatile unsigned int numAvValues = 3;
+volatile double avValues[3];
+volatile unsigned int actAvValue = 0;
+
+// best average value
+volatile unsigned long bestValue = 1000000;
+
+void resetData(void)
+{
+  unsigned int i;
+  lastTicks = 0;
+  lastCountedTicks = 0;
+  for(i=0; i<numStatistics; i++)  statistics[i] = 0;
+  actAvValue = 0;
+  for(i=0; i<numAvValues; i++)  avValues[i] = 0;
+  bestValue = 1000000;
+  actValue = 0;
+}
 
 void countClockTicks(void)
 {
   if(lastTicks == 0)
   {
     lastTicks = micros();
+    lastCountedTicks = lastTicks;
   }
   else
   {
     unsigned long curTicks = micros();
-    if((curTicks - lastTicks) > 10000) // filter out noise
+    if((curTicks - lastTicks) > filterValue) // filter out noise
     {
-      sumTicks += (curTicks - lastTicks);
+      statistics[(((curTicks - lastTicks) / statInterval) % numStatistics)]++;
+      actValue++;
+      if(actValue > numValues)
+      {
+        avValues[actAvValue] = (double)(curTicks - lastCountedTicks) / numValues;
+        actAvValue++;
+        actAvValue %= numAvValues;
+        lastCountedTicks = curTicks;
+        actValue = 0;
+      }
       lastTicks = curTicks;
-      numTicks++;
     }
   }
+  // life beat ...
+  digitalWrite(pin_g, state);
+  if(state == HIGH)  state = LOW;
+  else state = HIGH;
+  digitalWrite(pin_r, state);
+}
+
+void showStatistics(void)
+{
+  unsigned int i;
+  
+  for(i=0; i<numStatistics; i++)
+  {
+    Serial.print("count for up to ");
+    Serial.print((i + 1) * statInterval / 1000);
+    Serial.print(" ms is ");
+    Serial.println(statistics[i]);
+  }
+}
+
+void checkClock(void)
+{
+  for(;;)
+  {
+    digitalWrite(pin_y, LOW);
+    delay(500);
+    digitalWrite(pin_y, HIGH);
+    unsigned long hours, minutes, seconds, uptime = millis();
+    hours = uptime / 3600000;
+    uptime = uptime % 3600000;
+    minutes = uptime / 60000;
+    uptime = uptime % 60000;
+    seconds = uptime / 1000;
+    Serial.print("uptime hh:mm:ss "); 
+    Serial.print(hours); 
+    Serial.print(":"); 
+    Serial.print(minutes); 
+    Serial.print(":"); 
+    Serial.print(seconds); 
+    Serial.println(""); 
+  }
+}
+
+void showTime(void)
+{
+  unsigned int i;
+  double mulTicks = 1;
+  double avTicks = 0;
+  
+  for(i=0; i<numAvValues; i++)
+  {
+    avTicks += avValues[i];  
+  }
+  avTicks /= numAvValues;
+  
+  if(avTicks < filterValue)
+  {
+    Serial.println("waiting for more data ...");
+    return;
+  }
+  
+  if((1000000 / avTicks) > 3) mulTicks = 4;
+  avTicks *= mulTicks;
+  
+  if(avTicks < 800000)
+  {
+    Serial.println("waiting for more data ...");
+    return;
+  }
+
+/*
+  int sign = (avTicks < 0) ? (-1) : 1;
+  if((sign * avTicks) < bestValue)
+  {
+    bestValue = sign * avTicks;
+  }
+  else
+  {
+    avTicks = sign * bestValue;
+  }
+*/
+  Serial.print(avTicks);
+  Serial.print(" micros, ");
+  Serial.print(mulTicks);
+  Serial.print(" mult, ");
+  double difTicks = avTicks - 1000000;
+  double del = difTicks * 864 / 10000;
+  Serial.print(del);
+  Serial.println(" seconds per day");
 }
 
 void setup(void) 
 {
-  // counting interrupt
-  attachInterrupt(0, countClockTicks, RISING);
   // need more GND lines on the breadboard ;-)  
   pinMode(4, INPUT);
   pinMode(8, INPUT);
@@ -57,80 +186,43 @@ void setup(void)
   pinMode(pin_r, OUTPUT);
   // start serial communication
   Serial.begin(9600);
+  // reset data
+  resetData();
+  // install counting interrupt
+  attachInterrupt(0, countClockTicks, RISING);
 }
 
 void loop(void)
 {
   byte ser;
-  byte col;
-  byte col_state;
 
-  btn_state = digitalRead(btn);
-  if(btn_state == LOW && btn_last == HIGH)
-  {
-    digitalWrite(btn_i, state);
-    if(state == HIGH) state = LOW;
-    else state = HIGH;
-  }
-  btn_last = btn_state;
+  // ready :-) 
+  digitalWrite(pin_y, HIGH);
 
-  if(numTicks > 0)
-  {
-    unsigned long avTicks = (double)sumTicks / (double)numTicks;
-    int mulTicks = 1;
-    if(((double)1000000 / (double)avTicks) > 3) mulTicks = 4;
-    avTicks *= mulTicks;
-    Serial.print(avTicks);
-    Serial.print(" micros, ");
-    Serial.print(mulTicks);
-    Serial.print(" mult, ");
-    long difTicks = avTicks - 1000000;
-    double del = difTicks * 864 / 10000;
-    Serial.print(del);
-    Serial.println(" seconds per day");
-  }
-  
   if(Serial.available() > 0)
   {
-    col = 0;
     ser = Serial.read();
     switch(ser)
     {
-      case 'R': Serial.println("red ON");
-                col_state = HIGH;
-                col = pin_r;
+      case 't': Serial.println("time");
+                showTime();
                 break;
-      case 'Y': Serial.println("yellow ON");
-                col_state = HIGH;
-                col = pin_y;
+      case 's': Serial.println("statistics");
+                showStatistics();
                 break;
-      case 'G': Serial.println("green ON");
-                col_state = HIGH;
-                col = pin_g;
+      case 'r': Serial.println("reset");
+                resetData();
                 break;
-      case 'r': Serial.println("red OFF");
-                col_state = LOW;
-                col = pin_r;
-                break;
-      case 'y': Serial.println("yellow OFF");
-                col_state = LOW;
-                col = pin_y;
-                break;
-      case 'g': Serial.println("green OFF");
-                col_state = LOW;
-                col = pin_g;
-                break;
-      case 't': Serial.println("timer");
+      case 'c': Serial.println("check clock");
+                checkClock();
                 break;
       default:  Serial.print("unknown command ");
                 Serial.print("-"); Serial.print(ser, BYTE); Serial.print("-"); Serial.println();
                 break;
     }
-    if(col != 0)
-    {
-      digitalWrite(col, col_state);
-    } 
    }
+   
+   showTime();
 
    delay(cycle);
 }
