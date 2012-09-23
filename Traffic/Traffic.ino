@@ -2,8 +2,6 @@
 //
 // th.acker@arcor.de
 //
-// 30.12.2010
-//
 
 byte pin_g = 5;
 byte pin_y = 6;

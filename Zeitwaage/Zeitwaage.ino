@@ -2,8 +2,6 @@
 //
 // th.acker@arcor.de
 //
-// 02.01.2011
-//
 
 byte pin_g = 5;
 byte pin_y = 6;
@@ -149,17 +147,6 @@ void showTime(void)
     return;
   }
 
-/*
-  int sign = (avTicks < 0) ? (-1) : 1;
-  if((sign * avTicks) < bestValue)
-  {
-    bestValue = sign * avTicks;
-  }
-  else
-  {
-    avTicks = sign * bestValue;
-  }
-*/
   Serial.print(avTicks);
   Serial.print(" micros, ");
   Serial.print(mulTicks);
