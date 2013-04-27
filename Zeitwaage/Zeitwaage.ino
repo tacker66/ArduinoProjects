@@ -1,13 +1,9 @@
 
-//
-// th.acker@arcor.de
-//
-
-byte pin_g = 5;
+byte pin_g = 9;
 byte pin_y = 6;
-byte pin_r = 7;
-byte btn = 12;
-byte btn_i = 13;
+byte pin_r = 12;
+byte btn = 4;
+byte btn_i = 11;
 byte state = HIGH;
 
 // cycle time for main loop()
@@ -159,11 +155,6 @@ void showTime(void)
 
 void setup(void) 
 {
-  // need more GND lines on the breadboard ;-)  
-  pinMode(4, INPUT);
-  pinMode(8, INPUT);
-  digitalWrite(4, HIGH); // pullup
-  digitalWrite(8, HIGH); // pullup
   // input button
   pinMode(btn, INPUT);
   digitalWrite(btn, HIGH); // pullup
@@ -206,7 +197,7 @@ void loop(void)
                 checkClock();
                 break;
       default:  Serial.print("unknown command ");
-                Serial.print("-"); Serial.print(ser, BYTE); Serial.print("-"); Serial.println();
+                Serial.print("-"); Serial.print(ser); Serial.print("-"); Serial.println();
                 break;
     }
    }
