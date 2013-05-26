@@ -68,7 +68,7 @@ char TVout::begin(uint8_t mode) {
  *	Returns:
  *		0 if no error.
  *		1 if x is not divisable by 8.
- *		2 if y is to large (NTSC only cannot fill PAL vertical resolution by 8bit limit)
+ *		//2 if y is too large (NTSC only cannot fill PAL vertical resolution by 8bit limit)
  *		4 if there is not enough memory for the frame buffer.
  */
 char TVout::begin(uint8_t mode, uint8_t x, uint8_t y) {
