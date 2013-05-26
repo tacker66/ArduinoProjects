@@ -5,13 +5,29 @@
 TVout TV;
 
 void setup() {
-  TV.begin(PAL, 136, 104);
-  TV.clear_screen();
-  TV.select_font(font8x8);
-  TV.print(4, 44, "Mandelbrot-Demo");
-  delay(3000);
-  TV.clear_screen();
   
+  Serial.begin(57600);
+  Serial.println("");
+  Serial.println("Mandelbrot-Demo:");
+  
+  int ret = TV.begin(PAL, 120, 90); // aspect ratio 4:3; width has to be divisible by 8
+  if(ret) 
+  {
+    Serial.print("Error in TV.begin: ");
+    Serial.println(ret);
+  }
+  else
+  {
+    Serial.println("Drawing ...");
+  }
+  
+  TV.clear_screen();
+  TV.select_font(font6x8);
+  TV.print(4, 44, "Mandelbrot-Demo");
+  delay(10000); // lasts only 3 seconds here !?
+
+  TV.clear_screen();
+  unsigned long time = millis();
   const unsigned int width = TV.hres();
   const unsigned int height = TV.vres();
   const float min_re = -2.2;
@@ -41,6 +57,10 @@ void setup() {
         TV.set_pixel(x, y, WHITE);
     }
   }
+  
+  Serial.print("Duration: ");
+  Serial.print((float)(millis()-time)/1000);
+  Serial.print(" seconds");
 }
 
 void loop() {}
