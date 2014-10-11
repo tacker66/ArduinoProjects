@@ -1,38 +1,24 @@
+#include <Arduino.h>
 
-int pin_r = 12;
-int pin_y = 9;
-int pin_g = 6;
+/*
+  Turns on an LED on for one second, then off for one second, repeatedly.
+*/
 
-int wait = 200;
-
-void setup() 
-{      
-  pinMode(pin_r, OUTPUT);     
-  pinMode(pin_y, OUTPUT);     
-  pinMode(pin_g, OUTPUT);     
-  digitalWrite(pin_r, HIGH);  
-  digitalWrite(pin_y, HIGH);  
-  digitalWrite(pin_g, HIGH); 
-  delay(5*wait);             
-}
-
-void loop() 
+void setup()
 {
-  digitalWrite(pin_r, LOW);  
-  digitalWrite(pin_y, LOW);  
-  digitalWrite(pin_g, LOW); 
-  delay(wait);             
-  digitalWrite(pin_r, HIGH); 
-  digitalWrite(pin_y, LOW);  
-  digitalWrite(pin_g, LOW); 
-  delay(wait);             
-  digitalWrite(pin_r, LOW); 
-  digitalWrite(pin_y, HIGH); 
-  digitalWrite(pin_g, LOW);  
-  delay(wait);             
-  digitalWrite(pin_r, LOW);  
-  digitalWrite(pin_y, LOW);  
-  digitalWrite(pin_g, HIGH); 
-  delay(wait);             
+	Serial.begin(9600);
+
+	// initialize the digital pin as an output.
+	// Pin 13 has an LED connected on most Arduino boards:
+	pinMode(13, OUTPUT);
 }
 
+void loop()
+{
+	Serial.println("Hello world!");
+
+	delay(1000);              // wait for a second
+	digitalWrite(13, HIGH);   // set the LED on
+	delay(1000);              // wait for a second
+	digitalWrite(13, LOW);    // set the LED off
+}
